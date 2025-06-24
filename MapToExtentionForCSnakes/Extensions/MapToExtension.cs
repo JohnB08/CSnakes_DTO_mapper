@@ -9,12 +9,36 @@ namespace ClassImport.Extensions;
 public static class MapToExtension
 {
     /*Caching*/
-    private static readonly Type[] _types = [typeof(int), typeof(string), typeof(long), typeof(float), typeof(double), typeof(byte[]), typeof(bool), typeof(IReadOnlyList<>), typeof(IReadOnlyDictionary<,>), typeof(ValueTuple<>), typeof(Nullable<>), typeof(IGeneratorIterator<,,>), typeof(IPyBuffer), typeof(Task<>), typeof(void)];
-    private static readonly ConcurrentDictionary<Type, Func<PyObject, string, object>> _methodCache = new();
-    private static readonly MethodInfo _getValueGenericMethod = typeof(MapToExtension).GetMethod(nameof(_getValueFromPython), BindingFlags.Static | BindingFlags.NonPublic)!;
-    private static readonly MethodInfo _mapToMethod = typeof(MapToExtension).GetMethod(nameof(MapTo), BindingFlags.Static | BindingFlags.Public)!;
+    private static readonly Type[] _validCSnakesTypes = 
+        [
+            typeof(int), 
+            typeof(string), 
+            typeof(long), 
+            typeof(float), 
+            typeof(double), 
+            typeof(byte[]), 
+            typeof(bool), 
+            typeof(IReadOnlyList<>), 
+            typeof(IReadOnlyDictionary<,>), 
+            typeof(ValueTuple<>), 
+            typeof(Nullable<>), 
+            typeof(IGeneratorIterator<,,>), 
+            typeof(IPyBuffer), 
+            typeof(Task<>), 
+            typeof(void)
+        ];
+    
+    private static readonly ConcurrentDictionary<Type, Func<PyObject, string, object>> _convertMethodCache = new();
+    
+    private static readonly MethodInfo _convertValueFromPythonMethodInfo = typeof(MapToExtension).GetMethod(nameof(_convertValueFromPython), BindingFlags.Static | BindingFlags.NonPublic)!;
+    
+    private static readonly MethodInfo _mapToMethodInfo = typeof(MapToExtension).GetMethod(nameof(MapTo), BindingFlags.Static | BindingFlags.Public)!;
+    
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _propertyCache = new();
+    
     private static readonly ConcurrentDictionary<Type, Func<PyObject, object>> _mapToMethodCache = new();
+    
+    
     public static TTarget MapTo<TTarget>(this PyObject pyObj)
     {
         var obj = Activator.CreateInstance<TTarget>();
@@ -25,7 +49,7 @@ public static class MapToExtension
         {
             var attrInfo = prop.GetCustomAttribute<PythonPropertyName>()!;
             var type = prop.PropertyType;
-            if (_types.Contains(type) || (type.IsGenericType && _types.Contains(type.GetGenericTypeDefinition())))
+            if (_validCSnakesTypes.Contains(type) || (type.IsGenericType && _validCSnakesTypes.Contains(type.GetGenericTypeDefinition())))
             {
                 try
                 {
@@ -46,16 +70,16 @@ public static class MapToExtension
         }
         return obj;
     }
-    private static TSource _getValueFromPython<TSource>(PyObject obj, string propName)
+    private static TOut _convertValueFromPython<TOut>(PyObject obj, string propName)
     {
-        return obj.GetAttr(propName).As<TSource>();
+        return obj.GetAttr(propName).As<TOut>();
     }
     
     private static Func<PyObject, string, object> _getOrCompile(Type type)
     {
-        return _methodCache.GetOrAdd(type, t =>
+        return _convertMethodCache.GetOrAdd(type, t =>
         {
-            var method = _getValueGenericMethod.MakeGenericMethod(t);
+            var method = _convertValueFromPythonMethodInfo.MakeGenericMethod(t);
             var objParam = Expression.Parameter(typeof(PyObject), "obj");
             var nameParam = Expression.Parameter(typeof(string), "name");
             var call = Expression.Call(method, objParam, nameParam);
@@ -68,7 +92,7 @@ public static class MapToExtension
     {
         return _mapToMethodCache.GetOrAdd(type, t =>
         {
-            var method = _mapToMethod.MakeGenericMethod(t);
+            var method = _mapToMethodInfo.MakeGenericMethod(t);
             var objParam = Expression.Parameter(typeof(PyObject), "obj");
             var call = Expression.Call(method, objParam);
             var cast = Expression.Convert(call, typeof(object));
