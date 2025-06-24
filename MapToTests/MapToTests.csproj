@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.2"/>
+        <PackageReference Include="JetBrains.dotMemoryUnit" Version="3.2.20220510" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0"/>
         <PackageReference Include="xunit" Version="2.9.2"/>
         <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2"/>
@@ -32,6 +33,10 @@
         <AdditionalFiles Include="./PythonModules/class_with_collections.py">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </AdditionalFiles>
+
+        <AdditionalFiles Include="./PythonModules/class_with_multiple_properties.py">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </AdditionalFiles>
         
     </ItemGroup>
     
@@ -41,6 +46,10 @@
     
     <ItemGroup>
         <EmbeddedResource Include="./PythonModules/class_with_collections.py"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="./PythonModules/class_with_multiple_properties.py"/>
     </ItemGroup>
 
 </Project>

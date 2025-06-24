@@ -6,19 +6,29 @@ using CSnakes.Runtime.Python;
 
 namespace ClassImport.Extensions;
 
-public static class MapToExtention
+public static class MapToExtension
 {
-    private static readonly MethodInfo _baseMethod = typeof(MapToExtention).GetMethod(nameof(_getValueFromPython), BindingFlags.Static | BindingFlags.NonPublic)!;
-    public static TSource MapTo<TSource>(this PyObject pyObj) where TSource: class
+    private static readonly MethodInfo _baseMethod = typeof(MapToExtension).GetMethod(nameof(_getValueFromPython), BindingFlags.Static | BindingFlags.NonPublic)!;
+    private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _propertyCache = new();
+    public static TSource MapTo<TSource>(this PyObject pyObj)
     {
         var obj = Activator.CreateInstance<TSource>();
-        foreach (var prop in typeof(TSource).GetProperties())
+        var properties  = _propertyCache.GetOrAdd(typeof(TSource), t => t.GetProperties()
+                                                                                            .Where(p => p.GetCustomAttribute<PythonPropertyName>() is not null)
+                                                                                            .ToArray());
+        foreach (var prop in properties)
         {
-            var attrInfo = prop.GetCustomAttribute<PythonPropertyName>();
-            if (attrInfo is null) continue;
+            var attrInfo = prop.GetCustomAttribute<PythonPropertyName>()!;
             var type = prop.PropertyType;
-            var method = _getOrCompile(type);
-            prop.SetValue(obj,  method(pyObj, attrInfo.Name));
+            try
+            {
+                var method = _getOrCompile(type);
+                prop.SetValue(obj, method(pyObj, attrInfo.Name));
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to map property {prop.Name} on {type.Name}", ex);
+            }
         }
         return obj;
     }
