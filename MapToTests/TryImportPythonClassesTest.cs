@@ -68,6 +68,19 @@ public class ClassImportTests
         
         Assert.True(string.IsNullOrWhiteSpace(testOnlyIntMappedObj.TestString));
         Assert.Equal(123, testOnlyIntMappedObj.TestInt);
+    }
+
+    [Fact]
+    public void ImportNestedPythonObjects()
+    {
+        var env = _env.NestedClass();
+        var testObj = env.GetMainObj();
+        var testNestedObj = testObj.MapTo<TestNestedObject>();
         
+        Assert.NotNull(testNestedObj);
+        Assert.Equal(1, testNestedObj.Id);
+        Assert.Equal("Bob", testNestedObj.Name);
+        Assert.Equal(123, testNestedObj.NestedObject.Number);
+        Assert.Equal("Hello", testNestedObj.NestedObject.Word);
     }
 }

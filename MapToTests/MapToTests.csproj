@@ -26,30 +26,15 @@
     
     <ItemGroup>
         
-        <AdditionalFiles Include="./PythonModules/python_test_class.py">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </AdditionalFiles>
-        
-        <AdditionalFiles Include="./PythonModules/class_with_collections.py">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </AdditionalFiles>
-
-        <AdditionalFiles Include="./PythonModules/class_with_multiple_properties.py">
+        <AdditionalFiles Include="./PythonModules/*.py">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </AdditionalFiles>
         
     </ItemGroup>
     
     <ItemGroup>
-        <EmbeddedResource Include="./PythonModules/python_test_class.py"/>
-    </ItemGroup>
-    
-    <ItemGroup>
-        <EmbeddedResource Include="./PythonModules/class_with_collections.py"/>
+        <EmbeddedResource Include="./PythonModules/*.py"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <EmbeddedResource Include="./PythonModules/class_with_multiple_properties.py"/>
-    </ItemGroup>
 
 </Project>

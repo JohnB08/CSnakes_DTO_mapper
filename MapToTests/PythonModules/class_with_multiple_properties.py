@@ -7,6 +7,6 @@ class TestClassWithMultipleProperties:
         self.testInt = testInt
         self.testNone = None
 
-def get_test_class_with_multiple_properties(testStr: str, testInt: int):
+def get_test_class_with_multiple_properties(testStr: str, testInt: int) -> TestClassWithMultipleProperties:
     return TestClassWithMultipleProperties(testStr, testInt)
         
