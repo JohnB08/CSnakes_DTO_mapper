@@ -58,6 +58,7 @@ public static class MapToExtension
         {
             var attrInfo = prop.GetCustomAttribute<PythonPropertyName>()!;
             var type = prop.PropertyType;
+            if (!pyObj.HasAttr(attrInfo.Name)) throw new InvalidOperationException($"Python Object {nameof(pyObj)} does not have a attribute named {attrInfo.Name}");
             if (_validCSnakesTypes.Contains(type) || (type.IsGenericType && _validCSnakesTypes.Contains(type.GetGenericTypeDefinition())))
             {
                 try
