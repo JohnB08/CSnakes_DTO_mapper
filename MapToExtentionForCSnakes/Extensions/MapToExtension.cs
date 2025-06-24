@@ -8,7 +8,7 @@ namespace ClassImport.Extensions;
 
 public static class MapToExtension
 {
-    /*Caching*/
+    /*Caching and static values*/
     private static readonly Type[] _validCSnakesTypes = 
         [
             typeof(int), 
@@ -39,6 +39,15 @@ public static class MapToExtension
     private static readonly ConcurrentDictionary<Type, Func<PyObject, object>> _mapToMethodCache = new();
     
     
+    /*Public MapTo<T>*/
+    /// <summary>
+    /// Maps a PyObject to DTO Model of T
+    /// Currently only supports parameterless DTO classes. 
+    /// </summary>
+    /// <param name="pyObj"></param>
+    /// <typeparam name="TTarget"></typeparam>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public static TTarget MapTo<TTarget>(this PyObject pyObj)
     {
         var obj = Activator.CreateInstance<TTarget>();
@@ -70,10 +79,14 @@ public static class MapToExtension
         }
         return obj;
     }
+    
+    
     private static TOut _convertValueFromPython<TOut>(PyObject obj, string propName)
     {
         return obj.GetAttr(propName).As<TOut>();
     }
+    
+    
     
     private static Func<PyObject, string, object> _getOrCompile(Type type)
     {
@@ -88,6 +101,8 @@ public static class MapToExtension
         });
     }
 
+    
+    
     private static Func<PyObject, object> _mapToExpression(Type type)
     {
         return _mapToMethodCache.GetOrAdd(type, t =>
